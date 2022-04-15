@@ -1,0 +1,102 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+namespace org.drugs
+
+// BASE DEFINTIONS
+abstract participant Customer identified by customerId {
+  o String customerId
+}
+
+enum DrugStatus {
+  o VALID
+  o SOLD
+  o VOID  
+}
+
+enum DrugTransactionStatus {
+  o CREATED
+  o DISTRIBUTED
+  o PHARMA
+  o DELIVERED
+}
+
+// MANUFACTURE DEFINITIONS
+participant Manufacturer identified by manufacturerId {
+  o String manufacturerId
+  o String name
+}
+
+// Distributer DEFINITIONS
+participant Distributer extends Customer {
+}
+// Pharmacist DEFINITIONS
+participant Pharmacist extends Customer {
+}
+
+// Patient DEFINITIONS
+participant Patient extends Customer {
+}
+
+concept DrugMetaData {
+  o String serialNumber
+  o String productCode
+  o String batchNumber
+  --> Manufacturer manufacturer
+} 
+//assets
+asset Drug identified by drugHash {
+  o String drugHash
+  o DrugMetaData metaData
+  o String name
+  o DrugStatus drugStatus
+  o DrugTransactionStatus drugTransactionStatus
+  --> Distributer distributer optional
+  --> Pharmacist pharmacist optional
+  --> Customer owner optional
+}
+
+//transactions and events
+
+//Drug creation transaction 
+transaction CreateDrug {
+  o String drugHash
+  o String name
+  o DrugMetaData metaData
+}
+
+transaction ReceiveDrug {
+  --> Customer customer
+  --> Drug drug
+}
+
+transaction VerifyDrug {
+  o DrugMetaData metaData
+  o String drugHash
+  --> Customer verifier
+}
+
+event ReceiveDrugEvent {
+  o Customer customer
+  o Drug drug
+}
+
+event DrugVerified {
+  o Customer verifier
+  o Drug drug
+}
+
+event DrugInQuarantine {
+  o Drug drug
+}
